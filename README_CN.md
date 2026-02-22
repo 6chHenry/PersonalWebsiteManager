@@ -13,7 +13,7 @@
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.6+-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/6chHenry/personal-website-manager)
 
-<img src="assets/screenshots/main_interface.jpg" alt="主界面" width="80%">
+<img src="assets/screenshots/main_interface.png" alt="主界面" width="80%">
 
 </div>
 
@@ -21,28 +21,45 @@
 
 ## ✨ 功能特性
 
-- 📝 **Markdown 编辑器** - 功能完整的 Markdown 编辑，支持语法高亮
+- 📝 **Markdown 编辑器** - 功能完整的 Markdown 编辑，支持语法高亮，字体与预览保持一致
 - 👁 **实时预览** - 实时渲染预览，精美的深色主题
-- 🌳 **文件树** - 直观的文件导航，支持右键菜单操作
+- 🌳 **文件树** - 直观的文件导航，支持右键菜单操作，智能三级展开
+- 🧠 **思维导图** - 可视化目录结构，交互式思维导图，支持展开折叠，视图中心保持稳定
 - 🔀 **Git 集成** - 内置 Git 版本控制支持
-- 🤖 **AI 助手** - AI 驱动的写作助手（支持多种模型）
+- 🤖 **AI 助手** - AI 驱动的写作助手，支持多模型切换（硅基流动 + Moonshot）
 - 🔍 **内容搜索** - 跨所有 Markdown 文件搜索
 - 📐 **数学公式** - LaTeX/KaTeX 数学公式渲染
 - 🖼 **图片预览** - 内置图片查看器
-- 🎨 **现代界面** - 精美的深色主题，流畅动画效果
+- 🎨 **现代界面** - 精美的深色主题，流畅动画效果，简洁双栏布局
+
+---
+
+## 🚀 新增功能
+
+### 思维导图视图
+将文档结构可视化为交互式思维导图。双击文件夹展开/折叠，智能视图保持让焦点稳定不偏移。
+
+### 多模型 AI 助手
+在硅基流动模型（DeepSeek、Qwen、GLM）和 Moonshot（Kimi K2.5）之间无缝切换。根据所选模型自动切换 API 配置。
+
+### 统一字体
+编辑器现在使用与预览相同的精美「霞鹜文楷」字体，实现真正的所见即所得编辑体验。
+
+### 精简布局
+专注的双栏布局（编辑器 + 预览），最大化生产力。不再有多余的布局切换。
 
 ---
 
 ## 📸 软件截图
 
 <div align="center">
-  <img src="assets/screenshots/editor.jpg" alt="编辑器" width="45%">
-  <img src="assets/screenshots/preview.jpg" alt="预览" width="45%">
+  <img src="assets/screenshots/editor.png" alt="编辑器" width="45%">
+  <img src="assets/screenshots/preview.png" alt="预览" width="45%">
 </div>
 
 <div align="center">
-  <img src="assets/screenshots/ai_chat.jpg" alt="AI 对话" width="45%">
-  <img src="assets/screenshots/git_commit.jpg" alt="Git 提交" width="45%">
+  <img src="assets/screenshots/ai_chat.png" alt="AI 对话" width="45%">
+  <img src="assets/screenshots/git_commit.png" alt="Git 提交" width="45%">
 </div>
 
 ---
@@ -102,11 +119,17 @@
 
 ### 支持的 AI 模型
 
+**硅基流动模型：**
 - DeepSeek V3（推荐）
 - DeepSeek R1
 - Qwen3-8B
-- Qwen2.5 系列
+- Qwen2.5 系列（7B/14B/32B）
+- Qwen2.5-Coder-7B
 - GLM-4-9B
+- GLM-Z1-9B
+
+**Moonshot 模型：**
+- Kimi K2.5
 
 ---
 
@@ -158,12 +181,13 @@
 - [markdown2](https://github.com/trentm/python-markdown2) - Markdown 解析器
 - [KaTeX](https://katex.org/) - 数学公式渲染
 - [SiliconFlow](https://siliconflow.cn/) - AI API 提供商
+- [Moonshot AI](https://www.moonshot.cn/) - Kimi API 提供商
 
 ---
 
 ## 📧 联系方式
 
-<!-- 6chHenry - [@twitter_handle](https://twitter.com/yourhandle) - email@example.com -->
+<!-- Your Name - [@twitter_handle](https://twitter.com/yourhandle) - email@example.com -->
 
 项目地址: [https://github.com/6chHenry/personal-website-manager](https://github.com/6chHenry/personal-website-manager)
 

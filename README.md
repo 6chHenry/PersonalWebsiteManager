@@ -13,7 +13,7 @@
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.6+-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/6chHenry/personal-website-manager)
 
-<img src="assets/screenshots/main_interface.jpg" alt="Main Interface" width="80%">
+<img src="assets/screenshots/main_interface.png" alt="Main Interface" width="80%">
 
 </div>
 
@@ -21,28 +21,45 @@
 
 ## ✨ Features
 
-- 📝 **Markdown Editor** - Full-featured Markdown editing with syntax highlighting
+- 📝 **Markdown Editor** - Full-featured Markdown editing with syntax highlighting, matched font with preview
 - 👁 **Live Preview** - Real-time preview with beautiful dark theme
-- 🌳 **File Tree** - Intuitive file navigation with context menu actions
+- 🌳 **File Tree** - Intuitive file navigation with context menu actions, smart 3-level expansion
+- 🧠 **Mind Map View** - Visual directory structure as interactive mind map, supports expand/collapse with sticky viewport
 - 🔀 **Git Integration** - Built-in Git support for version control
-- 🤖 **AI Assistant** - AI-powered writing assistance (supports multiple models)
+- 🤖 **AI Assistant** - AI-powered writing assistance with multi-model support (SiliconFlow + Moonshot)
 - 🔍 **Content Search** - Search across all Markdown files
 - 📐 **Math Rendering** - LaTeX/KaTeX math formula support
 - 🖼 **Image Preview** - Built-in image viewer
-- 🎨 **Modern UI** - Beautiful dark theme with smooth animations
+- 🎨 **Modern UI** - Beautiful dark theme with smooth animations, clean two-column layout
+
+---
+
+## 🚀 What's New
+
+### Mind Map View
+Visualize your documentation structure as an interactive mind map. Double-click folders to expand/collapse, with smart viewport persistence that keeps your focus stable.
+
+### Multi-Model AI Assistant
+Switch between SiliconFlow models (DeepSeek, Qwen, GLM) and Moonshot (Kimi K2.5) seamlessly. API configuration auto-switches based on your selected model.
+
+### Unified Typography
+Editor now uses the same beautiful "霞鹜文楷" (LXGW WenKai) font as the preview, ensuring WYSIWYG editing experience.
+
+### Streamlined Layout
+Focused two-column layout (editor + preview) for maximum productivity. No more confusing layout switches.
 
 ---
 
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="assets/screenshots/editor.jpg" alt="Editor" width="45%">
-  <img src="assets/screenshots/preview.jpg" alt="Preview" width="45%">
+  <img src="assets/screenshots/editor.png" alt="Editor" width="45%">
+  <img src="assets/screenshots/preview.png" alt="Preview" width="45%">
 </div>
 
 <div align="center">
-  <img src="assets/screenshots/ai_chat.jpg" alt="AI Chat" width="45%">
-  <img src="assets/screenshots/git_commit.jpg" alt="Git Commit" width="45%">
+  <img src="assets/screenshots/ai_chat.png" alt="AI Chat" width="45%">
+  <img src="assets/screenshots/git_commit.png" alt="Git Commit" width="45%">
 </div>
 
 ---
@@ -102,11 +119,17 @@ To use the AI assistant feature, you need to configure your API key:
 
 ### Supported AI Models
 
+**SiliconFlow Models:**
 - DeepSeek V3 (Recommended)
 - DeepSeek R1
 - Qwen3-8B
-- Qwen2.5 Series
+- Qwen2.5 Series (7B/14B/32B)
+- Qwen2.5-Coder-7B
 - GLM-4-9B
+- GLM-Z1-9B
+
+**Moonshot Models:**
+- Kimi K2.5
 
 ---
 
@@ -158,12 +181,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [markdown2](https://github.com/trentm/python-markdown2) - Markdown parser
 - [KaTeX](https://katex.org/) - Math rendering
 - [SiliconFlow](https://siliconflow.cn/) - AI API provider
+- [Moonshot AI](https://www.moonshot.cn/) - Kimi API provider
 
 ---
 
 ## 📧 Contact
 
-<!-- 6chHenry - [@twitter_handle](https://twitter.com/yourhandle) - email@example.com -->
+<!-- Your Name - [@twitter_handle](https://twitter.com/yourhandle) - email@example.com -->
 
 Project Link: [https://github.com/6chHenry/personal-website-manager](https://github.com/6chHenry/personal-website-manager)
 

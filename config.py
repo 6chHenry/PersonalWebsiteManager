@@ -6,72 +6,70 @@ Personal Website Manager - Configuration
 import os
 from pathlib import Path
 
-# Application name
 APP_NAME = "Personal Website Manager"
 APP_VERSION = "1.0.0"
 
-# Default paths
-DEFAULT_REPO_URL = "https://github.com/..." # Use your own github repo here
-DEFAULT_LOCAL_REPO = r"C:\Users\YourUsername\Documents\PersonalWebsiteRepo" # Change this to your local path    
+DEFAULT_REPO_URL = "https://github.com/6chHenry/6chHenry.github.io.git" # Alter it to your GitHub repository URL
+DEFAULT_LOCAL_REPO = r"F:\EECS498\6ch"   # Alter it to your local path where you want to clone the repo
 DEFAULT_DOCS_PATH = os.path.join(DEFAULT_LOCAL_REPO, "docs")
 
-# UI Settings
 WINDOW_WIDTH = 1400
 WINDOW_HEIGHT = 900
 SIDEBAR_WIDTH = 280
 
-# Editor Settings
 TAB_SIZE = 4
-AUTO_SAVE_INTERVAL = 30000  # milliseconds
-FONT_FAMILY = "Segoe UI"
-FONT_SIZE = 14
+AUTO_SAVE_INTERVAL = 30000
 
-# Sidebar Settings
-SIDEBAR_FONT_SIZE = 14
+FONT_FAMILY_CN = "霞鹜文楷, Inter, Microsoft YaHei, sans-serif"
+FONT_FAMILY_EN = "JetBrains Mono, Consolas, monospace"
+FONT_SIZE = 14
+EDITOR_FONT_SIZE = 15
+SIDEBAR_FONT_SIZE = 13
+
 SIDEBAR_ICON_SIZE = 18
 
-# Colors (Modern dark theme palette - inspired by VS Code Dark+)
 COLORS = {
-    # Background colors
-    "background": "#1a1a2e",
-    "surface": "#16213e",
-    "surface_light": "#1f3460",
-    "surface_hover": "#253a5c",
-    "border": "#2d4a6f",
-    
-    # Text colors
-    "text_primary": "#e8e8e8",
-    "text_secondary": "#9ba4b4",
-    "text_muted": "#6b7280",
-    
-    # Accent colors
-    "accent": "#0f969c",
-    "accent_hover": "#0db5bc",
-    "accent_light": "#12a4aa",
-    
-    # Status colors
-    "success": "#10b981",
-    "warning": "#f59e0b",
+    "background": "#09090b",
+    "surface": "#18181b",
+    "surface_light": "#1f1f23",
+    "surface_hover": "#27272a",
+    "surface_active": "#3f3f46",
+    "border": "#27272a",
+    "border_focus": "#52525b",
+
+    "text_primary": "#f4f4f5",
+    "text_secondary": "#a1a1aa",
+    "text_muted": "#71717a",
+
+    "accent": "#22d3ee",
+    "accent_hover": "#67e8f9",
+    "accent_pressed": "#06b6d4",
+
+    "success": "#22c55e",
+    "warning": "#eab308",
     "error": "#ef4444",
     "info": "#3b82f6",
-    
-    # Special colors
-    "sidebar_bg": "#0f0f23",
-    "sidebar_header": "#16213e",
-    "editor_bg": "#1a1a2e",
-    "preview_bg": "#1a1a2e",
-    "selection": "#264f78",
-    "line_highlight": "#1f2937",
-    
-    # Button colors
-    "btn_primary": "#0f969c",
-    "btn_primary_hover": "#0db5bc",
-    "btn_secondary": "#16213e",
-    "btn_secondary_hover": "#1f3460",
-    "btn_danger": "#dc2626",
-    "btn_danger_hover": "#ef4444",
-    
-    # Gradient colors
-    "gradient_start": "#0f969c",
-    "gradient_end": "#0db5bc",
+
+    "sidebar_bg": "#09090b",
+    "sidebar_header": "#18181b",
+    "sidebar_item_hover": "#27272a",
+    "sidebar_item_active": "#3f3f46",
+
+    "editor_bg": "#09090b",
+    "preview_bg": "#18181b",
+
+    "selection": "#3f3f46",
+    "line_highlight": "#27272a",
+
+    "btn_primary": "#22d3ee",
+    "btn_primary_hover": "#67e8f9",
+    "btn_primary_text": "#09090b",
+    "btn_secondary": "#27272a",
+    "btn_secondary_hover": "#3f3f46",
+    "btn_danger": "#ef4444",
+    "btn_danger_hover": "#f87171",
+
+    "gradient_start": "#18181b",
+    "gradient_end": "#27272a",
 }
+

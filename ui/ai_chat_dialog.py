@@ -127,8 +127,8 @@ class ChatMessage(QWidget):
         if is_user:
             self.text_edit.setStyleSheet(f"""
                 QTextEdit {{
-                    background-color: {COLORS['accent']};
-                    color: white;
+                    background-color: {COLORS['surface_active']};
+                    color: {COLORS['text_primary']};
                     padding: 10px;
                     border-radius: 10px;
                     border: none;
@@ -215,30 +215,43 @@ class ChatMessage(QWidget):
 
 class AIDialog(QDialog):
     """AI Chat Dialog"""
-    
-    # Hardcoded API credentials (for personal use only)
-    API_KEY = "sk-xxxxx" # Please replace with your actual API key
-    API_BASE = "https://api.siliconflow.com/v1" # Please replace with your actual API base URL (e.g., https://api.siliconflow.com/v1)
 
-    # Available models (free models marked with ★)
+    # API configurations for different providers
+    API_CONFIGS = {
+        "siliconflow": {
+            "api_key": "sk-duaxzsivkjivevzobuyfhaoknmvezxicgpagbmfpevawrogz",
+            "api_base": "https://api.siliconflow.cn/v1"
+        },
+        "moonshot": {
+            "api_key": "sk-QzCKljCIrZevTxc5LF0nTiWIm0JxCqOCRMqEHRWFRW3l2vfl",
+            "api_base": "https://api.moonshot.cn/v1"
+        }
+    }
+
+    # Available models (provider, model_id, display_name)
+    # free models marked with ★
     MODELS = [
-        ("deepseek-ai/DeepSeek-V3", "★ DeepSeek V3 (推荐)"),
-        ("deepseek-ai/DeepSeek-R1", "DeepSeek R1 (推理)"),
-        ("Qwen/Qwen3-8B", "★ Qwen3-8B"),
-        ("Qwen/Qwen2.5-7B-Instruct", "Qwen2.5-7B"),
-        ("Qwen/Qwen2.5-14B-Instruct", "Qwen2.5-14B"),
-        ("Qwen/Qwen2.5-32B-Instruct", "Qwen2.5-32B"),
-        ("Qwen/Qwen2.5-Coder-7B-Instruct", "Qwen2.5-Coder-7B"),
-        ("THUDM/glm-4-9b-chat", "GLM-4-9B"),
-        ("THUDM/GLM-Z1-9B-0414", "GLM-Z1-9B"),
+        ("siliconflow", "deepseek-ai/DeepSeek-V3", "★ DeepSeek V3 (推荐)"),
+        ("siliconflow", "deepseek-ai/DeepSeek-R1", "DeepSeek R1 (推理)"),
+        ("siliconflow", "Qwen/Qwen3-8B", "★ Qwen3-8B"),
+        ("siliconflow", "Qwen/Qwen2.5-7B-Instruct", "Qwen2.5-7B"),
+        ("siliconflow", "Qwen/Qwen2.5-14B-Instruct", "Qwen2.5-14B"),
+        ("siliconflow", "Qwen/Qwen2.5-32B-Instruct", "Qwen2.5-32B"),
+        ("siliconflow", "Qwen/Qwen2.5-Coder-7B-Instruct", "Qwen2.5-Coder-7B"),
+        ("siliconflow", "THUDM/glm-4-9b-chat", "GLM-4-9B"),
+        ("siliconflow", "THUDM/GLM-Z1-9B-0414", "GLM-Z1-9B"),
+        ("moonshot", "kimi-k2.5", "🌙 Kimi K2.5"),
     ]
     
     def __init__(self, parent=None):
         super().__init__(parent)
-        
-        self.api_key = self.API_KEY
-        self.api_base = self.API_BASE
-        self.model = self.MODELS[0][0]
+
+        # Initialize with first model (siliconflow)
+        self.current_provider = self.MODELS[0][0]
+        config = self.API_CONFIGS[self.current_provider]
+        self.api_key = config["api_key"]
+        self.api_base = config["api_base"]
+        self.model = self.MODELS[0][1]
         
         self.messages = [
             {"role": "system", "content": "你是一个有帮助的写作助手，帮助用户写作、修改文章、解答问题。请用中文回复。"}
@@ -273,8 +286,8 @@ class AIDialog(QDialog):
         top_layout.addWidget(model_label)
         
         self.model_combo = QComboBox()
-        for model_id, model_name in self.MODELS:
-            self.model_combo.addItem(model_name, model_id)
+        for provider, model_id, model_name in self.MODELS:
+            self.model_combo.addItem(model_name, (provider, model_id))
         self.model_combo.setFixedWidth(180)
         self.model_combo.setStyleSheet(f"""
             QComboBox {{
@@ -333,15 +346,16 @@ class AIDialog(QDialog):
         self.send_btn.setFixedWidth(80)
         self.send_btn.setStyleSheet(f"""
             QPushButton {{
-                background-color: {COLORS['accent']};
-                color: white;
-                border: none;
+                background-color: {COLORS['btn_secondary']};
+                color: {COLORS['text_primary']};
+                border: 1px solid {COLORS['border']};
                 border-radius: 5px;
                 padding: 10px;
                 font-weight: bold;
             }}
             QPushButton:hover {{
-                background-color: {COLORS['accent_hover']};
+                background-color: {COLORS['btn_secondary_hover']};
+                border-color: {COLORS['border_focus']};
             }}
             QPushButton:disabled {{
                 background-color: {COLORS['border']};
@@ -382,8 +396,16 @@ class AIDialog(QDialog):
         layout.addLayout(quick_layout)
     
     def on_model_changed(self, index):
-        """Handle model change"""
-        self.model = self.model_combo.currentData()
+        """Handle model change - switch API config based on provider"""
+        data = self.model_combo.currentData()
+        if data:
+            provider, model_id = data
+            self.current_provider = provider
+            self.model = model_id
+            # Update API config for the selected provider
+            config = self.API_CONFIGS[provider]
+            self.api_key = config["api_key"]
+            self.api_base = config["api_base"]
     
     def copy_conversation(self):
         """Copy all conversation text to clipboard"""
@@ -440,7 +462,7 @@ class AIDialog(QDialog):
             return
         
         if not self.api_key:
-            self.add_message("请设置环境变量 SILICONFLOW_API_KEY", False)
+            self.add_message("API 密钥未配置", False)
             return
         
         # Add user message

@@ -7,7 +7,7 @@ import os
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QSplitter, 
     QMessageBox, QFileDialog, QInputDialog, QDialog,
-    QMenuBar, QMenu, QStatusBar
+    QMenuBar, QMenu, QStatusBar, QToolButton, QFrame, QStackedWidget
 )
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QAction, QKeySequence, QTextCursor, QIcon
@@ -16,9 +16,11 @@ from ui.directory_tree import DirectoryTree
 from ui.editor import MarkdownEditor
 from ui.preview import MarkdownPreview
 from ui.clone_dialog import CloneDialog
+from ui.mind_map import MindMapWidget
 from config import (
-    APP_NAME, WINDOW_WIDTH, WINDOW_HEIGHT, 
-    SIDEBAR_WIDTH, COLORS, DEFAULT_REPO_URL, DEFAULT_LOCAL_REPO
+    APP_NAME, WINDOW_WIDTH, WINDOW_HEIGHT,
+    SIDEBAR_WIDTH, COLORS, DEFAULT_REPO_URL, DEFAULT_LOCAL_REPO,
+    FONT_FAMILY_CN, FONT_FAMILY_EN, EDITOR_FONT_SIZE, SIDEBAR_FONT_SIZE
 )
 from core.git_manager import GitManager
 from core.file_manager import FileManager
@@ -30,21 +32,19 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         
-        # Initialize managers
         self.git_manager = GitManager()
         self.file_manager = FileManager()
         
-        # Connect git signals
         self.git_manager.status_changed.connect(self.on_git_status_changed)
         self.git_manager.error_occurred.connect(self.on_git_error)
         
-        # Current file tracking
         self.current_file_path = None
         self.current_file_modified = False
         self.auto_save_timer = QTimer()
         self.auto_save_timer.timeout.connect(self.auto_save)
+
+        self.mind_map_in_sidebar = False
         
-        # Setup UI
         self.init_ui()
         self.apply_styles()
         self.load_config()
@@ -54,86 +54,155 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(APP_NAME)
         self.setGeometry(100, 100, WINDOW_WIDTH, WINDOW_HEIGHT)
         
-        # Set window icon
         icon_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "icon.ico")
         if os.path.exists(icon_path):
             self.setWindowIcon(QIcon(icon_path))
         
-        # Create central widget with splitter
         central_widget = QWidget()
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
         main_layout.setSpacing(0)
         
-        # Create splitter for sidebar and content
-        splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.main_splitter = QSplitter(Qt.Orientation.Horizontal)
         
-        # Sidebar (Directory Tree)
         self.sidebar = self.create_sidebar()
-        splitter.addWidget(self.sidebar)
-        splitter.setSizes([SIDEBAR_WIDTH, WINDOW_WIDTH - SIDEBAR_WIDTH])
+        self.main_splitter.addWidget(self.sidebar)
+        self.main_splitter.setSizes([SIDEBAR_WIDTH, WINDOW_WIDTH - SIDEBAR_WIDTH])
         
-        # Editor and Preview area
-        content_splitter = QSplitter(Qt.Orientation.Horizontal)
+        self.content_container = self.create_content_area()
+        self.main_splitter.addWidget(self.content_container)
         
-        # Markdown Editor
-        self.editor = MarkdownEditor()
-        self.editor.textChanged.connect(self.on_text_changed)
-        content_splitter.addWidget(self.editor)
+        main_layout.addWidget(self.main_splitter, 1)
         
-        # Markdown Preview
-        self.preview = MarkdownPreview()
-        content_splitter.addWidget(self.preview)
-        
-        # Set equal sizes for editor and preview
-        content_splitter.setSizes([(WINDOW_WIDTH - SIDEBAR_WIDTH) // 2] * 2)
-        
-        splitter.addWidget(content_splitter)
-        main_layout.addWidget(splitter, 1)
-        
-        # Set central widget
         self.setCentralWidget(central_widget)
         
-        # Create menu bar (must be after editor is created)
         self.create_menu_bar()
         
-        # Status bar
         self.status_bar = QStatusBar()
-        self.status_bar.setStyleSheet(f"color: {COLORS['text_secondary']}; background-color: {COLORS['surface']};")
+        self.status_bar.setStyleSheet(f"""
+            QStatusBar {{
+                background-color: {COLORS['surface']};
+                color: {COLORS['text_secondary']};
+                border-top: 1px solid {COLORS['border']};
+                padding: 4px 10px;
+            }}
+        """)
         self.setStatusBar(self.status_bar)
+    
+    def create_content_area(self):
+        """Create content area with editor and preview"""
+        container = QWidget()
+        container.setStyleSheet(f"""
+            QWidget {{
+                background-color: {COLORS['background']};
+            }}
+        """)
         
+        layout = QVBoxLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        
+        header = self.create_content_header()
+        layout.addWidget(header)
+        
+        self.content_stack = QStackedWidget()
+        
+        self.editor_preview_splitter = QSplitter(Qt.Orientation.Horizontal)
+        
+        self.editor = MarkdownEditor()
+        self.editor.textChanged.connect(self.on_text_changed)
+        self.editor_preview_splitter.addWidget(self.editor)
+        
+        self.preview = MarkdownPreview()
+        self.editor_preview_splitter.addWidget(self.preview)
+        
+        half_width = WINDOW_WIDTH - SIDEBAR_WIDTH
+        self.editor_preview_splitter.setSizes([half_width // 2, half_width // 2])
+        
+        self.content_stack.addWidget(self.editor_preview_splitter)
+        
+        from ui.mind_map import MindMapWidget
+        self.mind_map_full = MindMapWidget()
+        self.mind_map_full.file_selected.connect(self.on_mind_map_file_selected)
+        self.mind_map_full.directory_changed.connect(self.on_directory_changed)
+        self.mind_map_full.expand_requested.connect(self.show_mind_map_view)
+        self.content_stack.addWidget(self.mind_map_full)
+        
+        layout.addWidget(self.content_stack, 1)
+        
+        return container
+    
+    def create_content_header(self):
+        """Create content area header"""
+        header = QFrame()
+        header.setStyleSheet(f"""
+            QFrame {{
+                background-color: {COLORS['surface']};
+                border-bottom: 1px solid {COLORS['border']};
+            }}
+        """)
+        header_layout = QHBoxLayout(header)
+        header_layout.setContentsMargins(12, 6, 12, 6)
+        header_layout.setSpacing(8)
+        
+        from PyQt6.QtWidgets import QLabel
+        
+        self.file_name_label = QLabel("未选择文件")
+        self.file_name_label.setStyleSheet(f"""
+            QLabel {{
+                color: {COLORS['text_primary']};
+                font-size: 13px;
+                font-weight: 500;
+            }}
+        """)
+        header_layout.addWidget(self.file_name_label)
+        
+        header_layout.addStretch()
+
+        return header
+    
     def create_menu_bar(self):
         """Create menu bar"""
         menu_bar = QMenuBar()
-        menu_bar.setStyleSheet("""
-            QMenuBar {
-                background-color: #252526;
-                color: #CCCCCC;
-                border-bottom: 1px solid #3E3E42;
-                font-size: 14px;
-            }
-            QMenuBar::item {
+        menu_bar.setStyleSheet(f"""
+            QMenuBar {{
+                background-color: {COLORS['surface']};
+                color: {COLORS['text_secondary']};
+                border-bottom: 1px solid {COLORS['border']};
+                font-size: 13px;
+                padding: 2px;
+            }}
+            QMenuBar::item {{
                 padding: 6px 12px;
                 background-color: transparent;
-            }
-            QMenuBar::item:selected {
-                background-color: #2D2D30;
-            }
-            QMenu {
-                background-color: #252526;
-                color: #CCCCCC;
-                border: 1px solid #3E3E42;
-                font-size: 14px;
-            }
-            QMenu::item {
+                border-radius: 4px;
+            }}
+            QMenuBar::item:selected {{
+                background-color: {COLORS['surface_hover']};
+                color: {COLORS['text_primary']};
+            }}
+            QMenu {{
+                background-color: {COLORS['surface']};
+                color: {COLORS['text_secondary']};
+                border: 1px solid {COLORS['border']};
+                font-size: 13px;
+                padding: 4px;
+            }}
+            QMenu::item {{
                 padding: 6px 30px;
-            }
-            QMenu::item:selected {
-                background-color: #007ACC;
-            }
+                border-radius: 4px;
+            }}
+            QMenu::item:selected {{
+                background-color: {COLORS['accent']};
+                color: {COLORS['btn_primary_text']};
+            }}
+            QMenu::separator {{
+                height: 1px;
+                background-color: {COLORS['border']};
+                margin: 4px 8px;
+            }}
         """)
         
-        # File menu
         file_menu = QMenu("文件", self)
         
         save_action = QAction("保存", self)
@@ -165,7 +234,6 @@ class MainWindow(QMainWindow):
         
         menu_bar.addMenu(file_menu)
         
-        # Edit menu
         edit_menu = QMenu("编辑", self)
         
         undo_action = QAction("撤销", self)
@@ -204,7 +272,6 @@ class MainWindow(QMainWindow):
         
         menu_bar.addMenu(edit_menu)
         
-        # Git menu
         git_menu = QMenu("Git", self)
         
         commit_action = QAction("提交更改", self)
@@ -230,7 +297,6 @@ class MainWindow(QMainWindow):
         
         menu_bar.addMenu(git_menu)
         
-        # MkDocs menu
         mkdocs_menu = QMenu("MkDocs", self)
         
         edit_config_action = QAction("编辑 mkdocs.yml 配置", self)
@@ -256,10 +322,9 @@ class MainWindow(QMainWindow):
         mkdocs_menu.addAction(deploy_action)
         
         menu_bar.addMenu(mkdocs_menu)
-        
-        # Set menu bar
+
         self.setMenuBar(menu_bar)
-        
+
     def create_sidebar(self):
         """Create the sidebar with directory tree and actions"""
         sidebar_widget = QWidget()
@@ -274,103 +339,194 @@ class MainWindow(QMainWindow):
         sidebar_layout.setContentsMargins(0, 0, 0, 0)
         sidebar_layout.setSpacing(0)
         
-        # Header with gradient
-        from PyQt6.QtWidgets import QLabel, QFrame
         header = QFrame()
         header.setStyleSheet(f"""
             QFrame {{
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 {COLORS["gradient_start"]}, stop:1 {COLORS["gradient_end"]});
-                padding: 15px;
+                background-color: {COLORS["sidebar_header"]};
                 border-bottom: 1px solid {COLORS["border"]};
             }}
         """)
         header_layout = QVBoxLayout(header)
-        header_layout.setContentsMargins(15, 10, 15, 10)
+        header_layout.setContentsMargins(16, 12, 16, 10)
         
-        title = QLabel("📁 文件目录")
+        from PyQt6.QtWidgets import QLabel
+        title = QLabel("文件目录")
         title.setStyleSheet(f"""
-            font-size: 16px; 
-            font-weight: bold; 
-            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            color: {COLORS['text_primary']};
             background: transparent;
         """)
         header_layout.addWidget(title)
+        
         sidebar_layout.addWidget(header)
         
-        # Directory tree container
-        tree_container = QWidget()
-        tree_container.setStyleSheet(f"background-color: {COLORS['sidebar_bg']}; padding: 5px;")
-        tree_layout = QVBoxLayout(tree_container)
-        tree_layout.setContentsMargins(5, 5, 5, 5)
+        self.view_toggle_container = QWidget()
+        self.view_toggle_container.setStyleSheet(f"""
+            QWidget {{
+                background-color: {COLORS['sidebar_header']};
+                padding: 4px 12px;
+                border-bottom: 1px solid {COLORS['border']};
+            }}
+        """)
+        toggle_layout = QHBoxLayout(self.view_toggle_container)
+        toggle_layout.setContentsMargins(8, 4, 8, 4)
         
-        # Directory tree
+        self.tree_view_btn = QToolButton()
+        self.tree_view_btn.setText("目录")
+        self.tree_view_btn.setCheckable(True)
+        self.tree_view_btn.setChecked(True)
+        self.tree_view_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        
+        self.mind_map_btn = QToolButton()
+        self.mind_map_btn.setText("导图")
+        self.mind_map_btn.setCheckable(True)
+        self.mind_map_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+        
+        toggle_style = f"""
+            QToolButton {{
+                background-color: transparent;
+                color: {COLORS['text_muted']};
+                border: none;
+                padding: 6px 12px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 500;
+            }}
+            QToolButton:checked {{
+                background-color: {COLORS['surface_active']};
+                color: {COLORS['accent']};
+            }}
+            QToolButton:hover {{
+                background-color: {COLORS['surface_hover']};
+                color: {COLORS['text_primary']};
+            }}
+        """
+        self.tree_view_btn.setStyleSheet(toggle_style)
+        self.mind_map_btn.setStyleSheet(toggle_style)
+        
+        toggle_layout.addWidget(self.tree_view_btn)
+        toggle_layout.addWidget(self.mind_map_btn)
+        toggle_layout.addStretch()
+        
+        sidebar_layout.addWidget(self.view_toggle_container)
+        
+        self.stacked_view = QStackedWidget()
+        self.stacked_view.setStyleSheet(f"""
+            QStackedWidget {{
+                background-color: {COLORS['sidebar_bg']};
+            }}
+        """)
+        
+        tree_container = QWidget()
+        tree_container.setStyleSheet(f"""
+            background-color: {COLORS['sidebar_bg']};
+        """)
+        tree_layout = QVBoxLayout(tree_container)
+        tree_layout.setContentsMargins(8, 8, 8, 8)
+        
         self.directory_tree = DirectoryTree()
         self.directory_tree.file_selected.connect(self.on_file_selected)
         self.directory_tree.directory_changed.connect(self.on_directory_changed)
         self.directory_tree.image_selected.connect(self.on_image_selected)
         tree_layout.addWidget(self.directory_tree, 1)
-        sidebar_layout.addWidget(tree_container, 1)
         
-        # Action buttons container
+        self.mind_map = MindMapWidget()
+        self.mind_map.file_selected.connect(self.on_file_selected)
+        self.mind_map.directory_changed.connect(self.on_directory_changed)
+        self.mind_map.expand_requested.connect(self.show_mind_map_view)
+        
+        self.stacked_view.addWidget(tree_container)
+        self.stacked_view.addWidget(self.mind_map)
+        
+        sidebar_layout.addWidget(self.stacked_view, 1)
+        
+        self.tree_view_btn.clicked.connect(self.show_tree_view)
+        self.mind_map_btn.clicked.connect(self.show_mind_map_view)
+        
         buttons_container = QWidget()
         buttons_container.setStyleSheet(f"""
             QWidget {{
                 background-color: {COLORS["sidebar_bg"]};
-                padding: 10px;
+                padding: 8px;
                 border-top: 1px solid {COLORS["border"]};
             }}
         """)
         button_layout = QVBoxLayout(buttons_container)
-        button_layout.setSpacing(6)
+        button_layout.setSpacing(4)
         
         from PyQt6.QtWidgets import QPushButton
         
-        # New file button
-        self.new_file_btn = QPushButton("📄 新建文件")
-        self.new_file_btn.clicked.connect(self.create_new_file)
+        self.new_file_btn = QPushButton("新建文件")
         self.new_file_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         button_layout.addWidget(self.new_file_btn)
         
-        # New folder button
-        self.new_folder_btn = QPushButton("📁 新建文件夹")
-        self.new_folder_btn.clicked.connect(self.create_new_folder)
+        self.new_folder_btn = QPushButton("新建文件夹")
         self.new_folder_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         button_layout.addWidget(self.new_folder_btn)
         
-        # Search button
-        self.search_btn = QPushButton("🔍 搜索内容")
-        self.search_btn.clicked.connect(self.show_search_dialog)
+        self.search_btn = QPushButton("搜索内容")
         self.search_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         button_layout.addWidget(self.search_btn)
         
-        # Add assets folder button
-        self.add_assets_btn = QPushButton("📎 添加资源文件夹")
-        self.add_assets_btn.clicked.connect(self.create_assets_folder)
+        self.add_assets_btn = QPushButton("添加资源文件夹")
         self.add_assets_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         button_layout.addWidget(self.add_assets_btn)
         
-        # Separator
         separator = QFrame()
         separator.setFrameShape(QFrame.Shape.HLine)
-        separator.setStyleSheet(f"background-color: {COLORS['border']}; max-height: 1px; margin: 5px 0;")
+        separator.setStyleSheet(f"background-color: {COLORS['border']}; max-height: 1px; margin: 4px 0;")
         button_layout.addWidget(separator)
         
-        # Git push button
-        self.git_push_btn = QPushButton("🚀 Git 提交")
-        self.git_push_btn.clicked.connect(self.show_git_commit_dialog)
+        self.git_push_btn = QPushButton("Git 提交")
         self.git_push_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         button_layout.addWidget(self.git_push_btn)
         
-        # AI Chat button
-        self.ai_chat_btn = QPushButton("🤖 AI 助手")
-        self.ai_chat_btn.clicked.connect(self.show_ai_chat)
+        self.ai_chat_btn = QPushButton("AI 助手")
         self.ai_chat_btn.setCursor(Qt.CursorShape.PointingHandCursor)
         button_layout.addWidget(self.ai_chat_btn)
         
         sidebar_layout.addWidget(buttons_container)
         
+        self.new_file_btn.clicked.connect(self.create_new_file)
+        self.new_folder_btn.clicked.connect(self.create_new_folder)
+        self.search_btn.clicked.connect(self.show_search_dialog)
+        self.add_assets_btn.clicked.connect(self.create_assets_folder)
+        self.git_push_btn.clicked.connect(self.show_git_commit_dialog)
+        self.ai_chat_btn.clicked.connect(self.show_ai_chat)
+        
         return sidebar_widget
+    
+    def show_tree_view(self):
+        """Switch to tree view"""
+        self.tree_view_btn.setChecked(True)
+        self.mind_map_btn.setChecked(False)
+        self.stacked_view.setCurrentIndex(0)
+        self.content_stack.setCurrentIndex(0)
+        self.mind_map_in_sidebar = False
+    
+    def show_mind_map_view(self):
+        """Switch to mind map full screen view - takes over editor+preview area"""
+        self.tree_view_btn.setChecked(False)
+        self.mind_map_btn.setChecked(True)
+        self.stacked_view.setCurrentIndex(1)
+        self.content_stack.setCurrentIndex(1)  # Show full-screen mind map in content area
+        self.mind_map_in_sidebar = False
+        # Refresh mind map to ensure it's up to date
+        self.mind_map_full.refresh()
+    
+    def show_sidebar_mind_map(self):
+        """Show mind map in sidebar with editor"""
+        self.mind_map_in_sidebar = True
+        self.content_stack.setCurrentIndex(0)
+        self.stacked_view.setCurrentIndex(1)
+        self.tree_view_btn.setChecked(False)
+        self.mind_map_btn.setChecked(True)
+    
+    def hide_sidebar_mind_map(self):
+        """Hide mind map from sidebar and go back to editor only"""
+        self.mind_map_in_sidebar = False
+        self.stacked_view.setCurrentIndex(0)
     
     def apply_styles(self):
         """Apply custom styles to the application"""
@@ -378,7 +534,7 @@ class MainWindow(QMainWindow):
         QWidget {{
             background-color: {COLORS["background"]};
             color: {COLORS["text_primary"]};
-            font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+            font-family: {FONT_FAMILY_CN};
             font-size: 13px;
         }}
         
@@ -390,19 +546,19 @@ class MainWindow(QMainWindow):
             background-color: {COLORS["btn_secondary"]};
             color: {COLORS["text_primary"]};
             border: 1px solid {COLORS["border"]};
-            padding: 10px 16px;
+            padding: 8px 12px;
             border-radius: 6px;
             text-align: left;
             font-size: 13px;
+            font-family: {FONT_FAMILY_CN};
         }}
         
         QPushButton:hover {{
             background-color: {COLORS["btn_secondary_hover"]};
-            border-color: {COLORS["accent"]};
         }}
         
         QPushButton:pressed {{
-            background-color: {COLORS["accent"]};
+            background-color: {COLORS["surface_active"]};
         }}
         
         QSplitter::handle {{
@@ -416,15 +572,15 @@ class MainWindow(QMainWindow):
         
         QScrollBar:vertical {{
             background: {COLORS["surface"]};
-            width: 12px;
+            width: 10px;
             border: none;
-            border-radius: 6px;
+            border-radius: 5px;
             margin: 2px;
         }}
         
         QScrollBar::handle:vertical {{
             background: {COLORS["border"]};
-            border-radius: 5px;
+            border-radius: 4px;
             min-height: 30px;
             margin: 2px;
         }}
@@ -445,15 +601,15 @@ class MainWindow(QMainWindow):
         
         QScrollBar:horizontal {{
             background: {COLORS["surface"]};
-            height: 12px;
+            height: 10px;
             border: none;
-            border-radius: 6px;
+            border-radius: 5px;
             margin: 2px;
         }}
         
         QScrollBar::handle:horizontal {{
             background: {COLORS["border"]};
-            border-radius: 5px;
+            border-radius: 4px;
             min-width: 30px;
             margin: 2px;
         }}
@@ -470,57 +626,60 @@ class MainWindow(QMainWindow):
         
         QMenu {{
             background-color: {COLORS["surface"]};
-            color: {COLORS["text_primary"]};
+            color: {COLORS["text_secondary"]};
             border: 1px solid {COLORS["border"]};
             border-radius: 8px;
-            padding: 5px;
+            padding: 4px;
         }}
         
         QMenu::item {{
-            padding: 8px 25px;
+            padding: 6px 25px;
             border-radius: 4px;
-            margin: 2px;
+            margin: 1px;
         }}
         
         QMenu::item:selected {{
             background-color: {COLORS["accent"]};
+            color: {COLORS["btn_primary_text"]};
         }}
         
         QMenu::separator {{
             height: 1px;
             background: {COLORS["border"]};
-            margin: 5px 10px;
+            margin: 4px 10px;
         }}
         
         QMenuBar {{
             background-color: {COLORS["surface"]};
-            color: {COLORS["text_primary"]};
+            color: {COLORS["text_secondary"]};
             border-bottom: 1px solid {COLORS["border"]};
-            padding: 5px;
+            padding: 2px;
         }}
         
         QMenuBar::item {{
-            padding: 8px 12px;
+            padding: 6px 10px;
             border-radius: 4px;
         }}
         
         QMenuBar::item:selected {{
-            background-color: {COLORS["surface_light"]};
+            background-color: {COLORS["surface_hover"]};
+            color: {COLORS["text_primary"]};
         }}
         
         QStatusBar {{
             background-color: {COLORS["surface"]};
             color: {COLORS["text_secondary"]};
             border-top: 1px solid {COLORS["border"]};
-            padding: 5px 10px;
+            padding: 4px 10px;
         }}
         
         QToolTip {{
-            background-color: {COLORS["surface_light"]};
+            background-color: {COLORS["surface_active"]};
             color: {COLORS["text_primary"]};
             border: 1px solid {COLORS["border"]};
             border-radius: 4px;
-            padding: 5px 10px;
+            padding: 5px 8px;
+            font-size: 12px;
         }}
         
         QLineEdit {{
@@ -528,7 +687,8 @@ class MainWindow(QMainWindow):
             color: {COLORS["text_primary"]};
             border: 1px solid {COLORS["border"]};
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 8px 10px;
+            font-size: 13px;
         }}
         
         QLineEdit:focus {{
@@ -548,7 +708,8 @@ class MainWindow(QMainWindow):
             color: {COLORS["text_primary"]};
             border: 1px solid {COLORS["border"]};
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 6px 10px;
+            font-size: 13px;
         }}
         
         QComboBox:hover {{
@@ -566,17 +727,16 @@ class MainWindow(QMainWindow):
             selection-background-color: {COLORS["accent"]};
             border: 1px solid {COLORS["border"]};
             border-radius: 6px;
+            padding: 2px;
         }}
         """
         self.setStyleSheet(style)
     
     def load_config(self):
         """Load configuration and initialize repository"""
-        # Check if local repository exists
         if os.path.exists(DEFAULT_LOCAL_REPO):
             self.open_local_repository(DEFAULT_LOCAL_REPO)
         else:
-            # Show clone dialog
             self.show_clone_dialog()
     
     def show_clone_dialog(self):
@@ -606,13 +766,14 @@ class MainWindow(QMainWindow):
         if success:
             self.file_manager.set_root_path(path)
             self.directory_tree.set_root_path(path)
+            self.mind_map.set_root_path(path)
+            self.mind_map_full.set_root_path(path)
             self.setWindowTitle(f"{APP_NAME} - {path}")
         else:
             QMessageBox.warning(self, "打开失败", message)
     
     def on_file_selected(self, file_path):
         """Handle file selection"""
-        # Check if current file has unsaved changes
         if self.current_file_modified:
             reply = QMessageBox.question(
                 self, "保存更改",
@@ -627,8 +788,26 @@ class MainWindow(QMainWindow):
             elif reply == QMessageBox.StandardButton.Cancel:
                 return
         
-        # Load new file
         self.load_file(file_path)
+    
+    def on_mind_map_file_selected(self, file_path):
+        """Handle file selection from mind map - switch to hybrid layout"""
+        if self.current_file_modified:
+            reply = QMessageBox.question(
+                self, "保存更改",
+                "当前文件有未保存的更改，是否保存？",
+                QMessageBox.StandardButton.Save | 
+                QMessageBox.StandardButton.Discard | 
+                QMessageBox.StandardButton.Cancel
+            )
+            
+            if reply == QMessageBox.StandardButton.Save:
+                self.save_current_file()
+            elif reply == QMessageBox.StandardButton.Cancel:
+                return
+        
+        self.load_file(file_path)
+        self.show_sidebar_mind_map()
     
     def load_file(self, file_path):
         """Load a file into the editor"""
@@ -640,20 +819,27 @@ class MainWindow(QMainWindow):
         self.current_file_path = file_path
         self.current_file_modified = False
         
-        # Update preview with base path for image resolution
         base_path = os.path.dirname(file_path)
         self.preview.update_preview(content, base_path)
         
-        # Start auto-save timer
-        self.auto_save_timer.start(30000)  # 30 seconds
+        file_name = os.path.basename(file_path)
+        self.file_name_label.setText(file_name)
+        
+        self.auto_save_timer.start(30000)
     
     def on_text_changed(self):
         """Handle text changes in editor"""
         self.current_file_modified = True
         content = self.editor.toPlainText()
-        # Pass base path if we have a current file open
         base_path = os.path.dirname(self.current_file_path) if self.current_file_path else None
         self.preview.update_preview(content, base_path)
+        
+        if self.current_file_path:
+            file_name = os.path.basename(self.current_file_path)
+            if self.current_file_modified:
+                self.file_name_label.setText(f"{file_name} •")
+            else:
+                self.file_name_label.setText(file_name)
     
     def on_directory_changed(self, directory_path):
         """Handle directory change"""
@@ -665,28 +851,22 @@ class MainWindow(QMainWindow):
     
     def create_new_file(self):
         """Create a new markdown file"""
-        # Get current directory from tree
         current_path = self.directory_tree.get_current_path()
         
-        # Ask for file name
         file_name, ok = QInputDialog.getText(
             self, "新建文件", "请输入文件名（不含扩展名）:"
         )
         
         if ok and file_name:
-            # Add .md extension
             if not file_name.endswith('.md'):
                 file_name += '.md'
             
-            # Create full path
             file_path = os.path.join(current_path, file_name)
             
-            # Check if file exists
             if os.path.exists(file_path):
                 QMessageBox.warning(self, "文件已存在", "该文件已存在！")
                 return
             
-            # Create file
             success, message = self.file_manager.create_file(file_path, "# " + file_name[:-3] + "\n\n")
             
             if success:
@@ -737,6 +917,9 @@ class MainWindow(QMainWindow):
         
         if success:
             self.current_file_modified = False
+            if self.current_file_path:
+                file_name = os.path.basename(self.current_file_path)
+                self.file_name_label.setText(file_name)
         else:
             QMessageBox.warning(self, "保存失败", message)
     
@@ -766,7 +949,6 @@ class MainWindow(QMainWindow):
         else:
             a0.accept()
     
-    # Git and menu action methods
     def on_git_status_changed(self, message):
         """Handle Git status change"""
         self.status_bar.showMessage(message)
@@ -810,11 +992,9 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "错误", "请先打开一个Git仓库")
             return
         
-        # Save current file first
         if self.current_file_modified:
             self.save_current_file()
         
-        # Get commit message
         message, ok = QInputDialog.getText(
             self, "提交更改", "请输入提交信息:"
         )
@@ -940,10 +1120,8 @@ class MainWindow(QMainWindow):
         )
         
         if reply == QMessageBox.StandardButton.Yes:
-            # First build
             self.build_site()
             
-            # Then commit and push
             success, result = self.git_manager.commit_changes("Build and deploy to GitHub Pages")
             
             if success:
@@ -972,7 +1150,6 @@ class MainWindow(QMainWindow):
         if os.path.exists(config_path):
             self.load_file(config_path)
             
-            # Try to find and scroll to nav: section
             content = self.editor.toPlainText()
             lines = content.split('\n')
             nav_line = -1
@@ -982,7 +1159,6 @@ class MainWindow(QMainWindow):
                     break
             
             if nav_line >= 0:
-                # Move cursor to nav: line
                 cursor = self.editor.textCursor()
                 cursor.movePosition(QTextCursor.MoveOperation.Start)
                 for _ in range(nav_line):
@@ -1015,7 +1191,6 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "错误", "请先打开一个Git仓库")
             return
         
-        # Save current file first
         if self.current_file_modified:
             self.save_current_file()
         
@@ -1057,7 +1232,6 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "错误", f"文件不存在: {file_path}")
             return
         
-        # Check if current file has unsaved changes
         if self.current_file_modified:
             reply = QMessageBox.question(
                 self, "保存更改",
@@ -1072,10 +1246,8 @@ class MainWindow(QMainWindow):
             elif reply == QMessageBox.StandardButton.Cancel:
                 return
         
-        # Load the file
         self.load_file(file_path)
         
-        # Jump to the specified line
         if line_number > 0:
             cursor = self.editor.textCursor()
             cursor.movePosition(QTextCursor.MoveOperation.Start)
@@ -1083,4 +1255,3 @@ class MainWindow(QMainWindow):
                 cursor.movePosition(QTextCursor.MoveOperation.Down)
             self.editor.setTextCursor(cursor)
             self.editor.ensureCursorVisible()
-
