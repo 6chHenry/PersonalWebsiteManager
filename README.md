@@ -1,8 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="Personal Website Manager Banner" width="100%">
-
-![Banner](banner.svg)
+<img src="assets/banner.svg" alt="Personal Website Manager Banner" width="100%">
 
 # Personal Website Manager
 
