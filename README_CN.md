@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="Personal Website Manager Banner" width="100%">
+<img src="assets/banner.jpg" alt="Personal Website Manager Banner" width="100%">
 
 # Personal Website Manager
 
@@ -13,7 +13,7 @@
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.6+-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/6chHenry/personal-website-manager)
 
-<img src="assets/screenshots/main_interface.png" alt="主界面" width="80%">
+<img src="assets/screenshots/main_interface.jpg" alt="主界面" width="80%">
 
 </div>
 
@@ -53,13 +53,13 @@
 ## 📸 软件截图
 
 <div align="center">
-  <img src="assets/screenshots/editor.png" alt="编辑器" width="45%">
-  <img src="assets/screenshots/preview.png" alt="预览" width="45%">
+  <img src="assets/screenshots/editor.jpg" alt="编辑器" width="45%">
+  <img src="assets/screenshots/preview.jpg" alt="预览" width="45%">
 </div>
 
 <div align="center">
-  <img src="assets/screenshots/ai_chat.png" alt="AI 对话" width="45%">
-  <img src="assets/screenshots/git_commit.png" alt="Git 提交" width="45%">
+  <img src="assets/screenshots/ai_chat.jpg" alt="AI 对话" width="45%">
+  <img src="assets/screenshots/git_commit.jpg" alt="Git 提交" width="45%">
 </div>
 
 ---

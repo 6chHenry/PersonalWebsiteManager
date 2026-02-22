@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/banner.png" alt="Personal Website Manager Banner" width="100%">
+<img src="assets/banner.jpg" alt="Personal Website Manager Banner" width="100%">
 
 # Personal Website Manager
 
@@ -13,7 +13,7 @@
 [![PyQt6](https://img.shields.io/badge/PyQt6-6.6+-green.svg)](https://www.riverbankcomputing.com/software/pyqt/)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](https://github.com/6chHenry/personal-website-manager)
 
-<img src="assets/screenshots/main_interface.png" alt="Main Interface" width="80%">
+<img src="assets/screenshots/main_interface.jpg" alt="Main Interface" width="80%">
 
 </div>
 
@@ -53,13 +53,13 @@ Focused two-column layout (editor + preview) for maximum productivity. No more c
 ## 📸 Screenshots
 
 <div align="center">
-  <img src="assets/screenshots/editor.png" alt="Editor" width="45%">
-  <img src="assets/screenshots/preview.png" alt="Preview" width="45%">
+  <img src="assets/screenshots/editor.jpg" alt="Editor" width="45%">
+  <img src="assets/screenshots/preview.jpg" alt="Preview" width="45%">
 </div>
 
 <div align="center">
-  <img src="assets/screenshots/ai_chat.png" alt="AI Chat" width="45%">
-  <img src="assets/screenshots/git_commit.png" alt="Git Commit" width="45%">
+  <img src="assets/screenshots/ai_chat.jpg" alt="AI Chat" width="45%">
+  <img src="assets/screenshots/git_commit.jpg" alt="Git Commit" width="45%">
 </div>
 
 ---
