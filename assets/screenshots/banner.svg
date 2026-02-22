@@ -1,0 +1,137 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- 深绿赛博渐变背景 -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#022c22;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#000000;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#064e3b;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- 霓虹粉发光滤镜 -->
+    <filter id="neonPink" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- 青色发光滤镜 -->
+    <filter id="neonCyan" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- 故障效果滤镜 -->
+    <filter id="glitch">
+      <feTurbulence type="turbulence" baseFrequency="0.05" numOctaves="2" result="turbulence">
+        <animate attributeName="baseFrequency" values="0.05;0.06;0.05" dur="3s" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="turbulence" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    
+    <!-- 电路板纹理图案 -->
+    <pattern id="circuit" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+      <path d="M 10 10 L 10 40 L 30 40 L 30 60" fill="none" stroke="#059669" stroke-width="0.5" opacity="0.3"/>
+      <circle cx="10" cy="10" r="2" fill="#059669" opacity="0.4"/>
+      <circle cx="30" cy="60" r="2" fill="#059669" opacity="0.4"/>
+      <path d="M 60 20 L 80 20 L 80 50 L 90 50" fill="none" stroke="#059669" stroke-width="0.5" opacity="0.2"/>
+    </pattern>
+  </defs>
+  
+  <!-- 背景层 -->
+  <rect width="1280" height="640" fill="url(#bgGrad)"/>
+  <rect width="1280" height="640" fill="url(#circuit)"/>
+  
+  <!-- 背景希腊字母（半透明装饰） -->
+  <text x="100" y="100" font-family="Times New Roman" font-size="60" fill="#059669" opacity="0.08">∑</text>
+  <text x="1100" y="150" font-family="Times New Roman" font-size="80" fill="#059669" opacity="0.06">∫</text>
+  <text x="200" y="550" font-family="Times New Roman" font-size="70" fill="#059669" opacity="0.05">ψ</text>
+  <text x="1000" y="500" font-family="Times New Roman" font-size="50" fill="#059669" opacity="0.07">φ</text>
+  <text x="50" y="300" font-family="Times New Roman" font-size="40" fill="#059669" opacity="0.06">∇</text>
+  
+  <!-- 扫描线动画 -->
+  <line x1="0" y1="0" x2="1280" y2="0" stroke="#ec4899" stroke-width="2" opacity="0.3" filter="url(#neonPink)">
+    <animate attributeName="y1" from="0" to="640" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="y2" from="0" to="640" dur="4s" repeatCount="indefinite"/>
+    <animate attributeName="opacity" values="0.3;0.6;0.3" dur="0.5s" repeatCount="indefinite"/>
+  </line>
+  
+  <!-- 钢笔尖图形（中心偏左） -->
+  <g transform="translate(540, 200)">
+    <!-- 钢笔轮廓 -->
+    <path d="M 60 0 L 100 80 L 100 120 Q 100 140 60 160 Q 20 140 20 120 L 20 80 Z" 
+          fill="#ecfdf5" stroke="#059669" stroke-width="3" filter="url(#neonCyan)"/>
+    <!-- 钢笔中缝 -->
+    <path d="M 60 0 L 60 100" stroke="#064e3b" stroke-width="2"/>
+    <!-- 笔尖发光点 -->
+    <circle cx="60" cy="155" r="5" fill="#ec4899" filter="url(#neonPink)">
+      <animate attributeName="r" values="5;8;5" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- 二进制代码流（从笔尖滴落） -->
+  <g id="binaryStream" font-family="JetBrains Mono, monospace" font-size="14" fill="#ec4899" filter="url(#neonPink)">
+    <!-- 多组二进制数字，不同速度下落 -->
+    <text x="595" y="370">0 1 0 1
+      <animateTransform attributeName="transform" type="translate" from="0 0" to="0 200" dur="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="3s" repeatCount="indefinite"/>
+    </text>
+    <text x="595" y="370">1 0 1 1
+      <animateTransform attributeName="transform" type="translate" from="0 -50" to="0 150" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
+    </text>
+    <text x="595" y="370">0 0 1 0
+      <animateTransform attributeName="transform" type="translate" from="0 -30" to="0 180" dur="3.5s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="3.5s" begin="1s" repeatCount="indefinite"/>
+    </text>
+    <text x="595" y="370">1 1 0 1
+      <animateTransform attributeName="transform" type="translate" from="0 -20" to="0 220" dur="2.8s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0;1;0" dur="2.8s" begin="1.5s" repeatCount="indefinite"/>
+    </text>
+  </g>
+  
+  <!-- 主标题 - Glitch效果（三层叠加） -->
+  <g transform="translate(640, 320)" text-anchor="middle">
+    <!-- 底层青色偏移 -->
+    <text x="-3" y="3" font-family="JetBrains Mono, sans-serif" font-size="72" font-weight="bold" fill="#06b6d4" opacity="0.8" filter="url(#neonCyan)">
+      ResearchOS
+      <animate attributeName="x" values="-3;3;-3" dur="0.3s" repeatCount="indefinite"/>
+    </text>
+    <!-- 顶层粉色偏移 -->
+    <text x="3" y="-3" font-family="JetBrains Mono, sans-serif" font-size="72" font-weight="bold" fill="#ec4899" opacity="0.8" filter="url(#neonPink)">
+      ResearchOS
+      <animate attributeName="x" values="3;-3;3" dur="0.4s" repeatCount="indefinite"/>
+    </text>
+    <!-- 主文字白色 -->
+    <text x="0" y="0" font-family="JetBrains Mono, sans-serif" font-size="72" font-weight="bold" fill="#f8fafc">
+      ResearchOS
+    </text>
+  </g>
+  
+  <!-- 副标题 -->
+  <text x="640" y="380" text-anchor="middle" font-family="Inter, sans-serif" font-size="24" fill="#94a3b8" letter-spacing="2">
+    AI-DRIVEN ACADEMIC WRITING
+    <animate attributeName="opacity" values="0.6;1;0.6" dur="3s" repeatCount="indefinite"/>
+  </text>
+  
+  <!-- 底部装饰线 -->
+  <line x1="440" y1="420" x2="840" y2="420" stroke="#059669" stroke-width="1" opacity="0.5">
+    <animate attributeName="x2" values="440;840;440" dur="4s" repeatCount="indefinite"/>
+  </line>
+  
+  <!-- 角落装饰：代码片段 -->
+  <text x="50" y="600" font-family="JetBrains Mono" font-size="12" fill="#059669" opacity="0.4">
+    import torch.nn as nn
+    <animate attributeName="opacity" values="0.4;0.7;0.4" dur="5s" repeatCount="indefinite"/>
+  </text>
+  <text x="1050" y="600" font-family="JetBrains Mono" font-size="12" fill="#ec4899" opacity="0.4" text-anchor="end">
+    $\mathcal{L}(\theta) = \sum_{i=1}^n$
+    <animate attributeName="opacity" values="0.4;0.7;0.4" dur="4s" begin="1s" repeatCount="indefinite"/>
+  </text>
+</svg>

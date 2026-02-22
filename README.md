@@ -2,6 +2,8 @@
 
 <img src="assets/banner.png" alt="Personal Website Manager Banner" width="100%">
 
+![Banner](banner.svg)
+
 # Personal Website Manager
 
 <a href="README.md">English</a> | <a href="README_CN.md">简体中文</a>
